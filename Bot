@@ -1,67 +1,71 @@
-// Define pin numbers
-#define FLAME_SENSOR_PIN 2       // Flame sensor connected to digital pin 2
-#define PUMP_RELAY_PIN 8        // Relay for controlling the DC pump connected to pin 8
-#define TRIGGER_PIN 9           // Ultrasonic sensor trigger connected to pin 9
-#define ECHO_PIN 10             // Ultrasonic sensor echo connected to pin 10
+char t = 'S'; 
+const int flameSensorPin = 8; 
+const int pumpPin = 7;
 
-// Variables for ultrasonic sensor
-long duration;
-int distance;
-
-// Setup the pins
 void setup() {
-  // Initialize flame sensor and pump relay pins
-  pinMode(FLAME_SENSOR_PIN, INPUT);
-  pinMode(PUMP_RELAY_PIN, OUTPUT);
-  
-  // Initialize ultrasonic sensor pins
-  pinMode(TRIGGER_PIN, OUTPUT);
-  pinMode(ECHO_PIN, INPUT);
+  pinMode(13, OUTPUT);
+  pinMode(12, OUTPUT); 
+  pinMode(11, OUTPUT); 
+  pinMode(10, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(flameSensorPin, INPUT);
+  pinMode(pumpPin, OUTPUT); 
 
-  // Start serial communication for debugging
   Serial.begin(9600);
 }
 
-// Main loop
 void loop() {
-  // Read flame sensor value (HIGH if flame is detected, LOW if no flame)
-  int flameStatus = digitalRead(FLAME_SENSOR_PIN);
-  
-  // Read ultrasonic sensor distance
-  distance = getDistance();
+  int flameDetected = digitalRead(flameSensorPin);
 
-  // Display distance for debugging
-  Serial.print("Distance: ");
-  Serial.print(distance);
-  Serial.println(" cm");
-
-  // If flame is detected (flameStatus is HIGH) and no obstacle is detected (distance > 10 cm)
-  if (flameStatus == HIGH && distance > 10) {
-    digitalWrite(PUMP_RELAY_PIN, HIGH);  // Turn on the DC pump
-    Serial.println("Flame detected, pump is ON");
-  } 
-  else {
-    digitalWrite(PUMP_RELAY_PIN, LOW);   // Turn off the DC pump
-    Serial.println("No flame or obstacle detected, pump is OFF");
+  if (flameDetected == LOW) {
+    digitalWrite(pumpPin, HIGH);
+    digitalWrite(9, HIGH); 
+  } else {
+    digitalWrite(pumpPin, LOW);
+    digitalWrite(9, LOW);
   }
 
-  delay(500);  // Delay for a while before taking another reading
-}
+  if (Serial.available()) {
+    t = Serial.read();
+  }
 
-// Function to get the distance from the ultrasonic sensor
-long getDistance() {
-  // Send a 10us pulse to trigger the ultrasonic sensor
-  digitalWrite(TRIGGER_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIGGER_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIGGER_PIN, LOW);
-  
-  // Read the time it took for the echo to return
-  duration = pulseIn(ECHO_PIN, HIGH);
-  
-  // Calculate distance in cm (speed of sound is 343m/s)
-  long distance = (duration / 2) / 29.1;
-  
-  return distance;
+  switch (t) {
+    case 'F':
+      digitalWrite(13, HIGH);
+      digitalWrite(12, LOW);
+      digitalWrite(11, HIGH);
+      digitalWrite(10, LOW);
+      break;
+
+    case 'B':
+      digitalWrite(13, LOW);
+      digitalWrite(12, HIGH);
+      digitalWrite(11, LOW);
+      digitalWrite(10, HIGH);
+      break;
+
+    case 'R':
+      digitalWrite(13, HIGH);
+      digitalWrite(12, LOW);
+      digitalWrite(11, LOW);
+      digitalWrite(10, HIGH);
+      break;
+
+    case 'L': 
+      digitalWrite(13, LOW);
+      digitalWrite(12, HIGH);
+      digitalWrite(11, HIGH);
+      digitalWrite(10, LOW);
+      break;
+
+    case 'S':
+    default:
+      digitalWrite(13, LOW);
+      digitalWrite(12, LOW);
+      digitalWrite(11, LOW);
+      digitalWrite(10, LOW);
+      break;
+  }
+
+  delay(50); 
 }
